@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi Dispatch Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #1a73e8;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary {
+            background-color: #1a73e8;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1557b0;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #555;
+        }
+        .stat-card p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        table th {
+            background-color: #f8f9fa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        table td {
+            font-size: 14px;
+        }
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input[type="datetime-local"] {
+            padding: 8px;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginView" class="login-container">
+        <div class="form-container">
+            <h1 style="text-align: center; margin-bottom: 20px;">Admin Login</h1>
+            <div id="loginError" class="error hidden"></div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardView" class="container hidden">
+        <div class="header">
+            <h1>Taxi Dispatch Dashboard</h1>
+            <div>
+                <span id="userRoleDisplay" style="margin-right: 10px;"></span>
+                <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="stat-card">
+                <h3>Upcoming Bookings</h3>
+                <p id="upcomingBookings">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Available Drivers</h3>
+                <p id="availableDrivers">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Earnings</h3>
+                <p id="totalEarnings">$0.00</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Scheduled Bookings</h2>
+            <button id="addBookingBtn" class="btn btn-primary" onclick="showAddBookingForm()">Add New Booking</button>
+            <div style="overflow-x: auto;">
+                <table id="bookingsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Pickup</th>
+                            <th>Destination</th>
+                            <th>Time</th>
+                            <th>Fare</th>
+                            <th>Status</th>
+                            <th>Driver</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Driver Management</h2>
+            <button id="addDriverBtn" class="btn btn-primary" onclick="showAddDriverForm()">Add New Driver</button>
+            <div style="overflow-x: auto;">
+                <table id="driversTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>License</th>
+                            <th>Status</th>
+                            <th>Earnings</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driversBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Customer Management</h2>
+            <button id="addCustomerBtn" class="btn btn-primary" onclick="showAddCustomerForm()">Add New Customer</button>
+            <div style="overflow-x: auto;">
+                <table id="customersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Reports & Analytics</h2>
+            <div class="grid">
+                <div>
+                    <h3 style="font-size: 18px; margin-bottom: 10px;">Booking Status</h3>
+                    <p id="reportScheduled" style="margin: 5px 0;">Scheduled: 0</p>
+                    <p id="reportAssigned" style="margin: 5px 0;">Assigned: 0</p>
+                    <p id="reportEnRoute" style="margin: 5px 0;">En Route: 0</p>
+                    <p id="reportCompleted" style="margin: 5px 0;">Completed: 0</p>
+                    <p id="reportCancelled" style="margin: 5px 0;">Cancelled: 0</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 18px; margin-bottom: 10px;">Driver Earnings</h3>
+                    <div id="driverEarnings"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fareManagement" class="card">
+            <h2>Fare Management</h2>
+            <p>Configure fare settings and track payments.</p>
+            <button class="btn btn-primary">Set Fare Rules</button>
+        </div>
+    </div>
+
+    <div id="addBookingView" class="container hidden">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Add New Booking</h2>
+            <div class="form-group">
+                <label for="bookingCustomer">Customer Name</label>
+                <input type="text" id="bookingCustomer" placeholder="Enter customer name">
+            </div>
+            <div class="form-group">
+                <label for="bookingPhone">Phone Number</label>
+                <input type="text" id="bookingPhone" placeholder="Enter phone number">
+            </div>
+            <div class="form-group">
+                <label for="bookingPickup">Pickup Location</label>
+                <input type="text" id="bookingPickup" placeholder="Enter pickup location">
+            </div>
+            <div class="form-group">
+                <label for="bookingDestination">Destination</label>
+                <input type="text" id="bookingDestination" placeholder="Enter destination">
+            </div>
+            <div class="form-group">
+                <label for="bookingTime">Time</label>
+                <input type="datetime-local" id="bookingTime">
+            </div>
+            <div class="form-group">
+                <label for="bookingFare">Fare ($)</label>
+                <input type="number" id="bookingFare" placeholder="Enter fare amount">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="submitBooking()">Submit</button>
+                <button class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addDriverView" class="container hidden">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Add New Driver</h2>
+            <div class="form-group">
+                <label for="driverName">Driver Name</label>
+                <input type="text" id="driverName" placeholder="Enter driver name">
+            </div>
+            <div class="form-group">
+                <label for="driverPhone">Phone Number</label>
+                <input type="text" id="driverPhone" placeholder="Enter phone number">
+            </div>
+            <div class="form-group">
+                <label for="driverLicense">License Number</label>
+                <input type="text" id="driverLicense" placeholder="Enter license number">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="submitDriver()">Submit</button>
+                <button class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addCustomerView" class="container hidden">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Add New Customer</h2>
+            <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input type="text" id="customerName" placeholder="Enter customer name">
+            </div>
+            <div class="form-group">
+                <label for="customerPhone">Phone Number</label>
+                <input type="text" id="customerPhone" placeholder="Enter phone number">
+            </div>
+            <div class="form-group">
+                <label for="customerEmail">Email</label>
+                <input type="email" id="customerEmail" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="customerAddress">Address (Optional)</label>
+                <input type="text" id="customerAddress" placeholder="Enter address">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="submitCustomer()">Submit</button>
+                <button class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'login';
+        let userRole = null;
+
+        let bookings = [
+            { id: 1, customer: "John Doe", phone: "123-456-7890", pickup: "123 Main St", destination: "456 Oak Ave", time: "2025-04-16T08:00:00", status: "Scheduled", driver: "Unassigned", fare: 25.00 },
+            { id: 2, customer: "Jane Smith", phone: "987-654-3210", pickup: "789 Pine Rd", destination: "321 Elm St", time: "2025-04-16T10:30:00", status: "Scheduled", driver: "Unassigned", fare: 30.00 }
+        ];
+
+        let drivers = [
+            { id: 1, name: "Mike Johnson", status: "Available", earnings: 0.00, phone: "555-0101", license: "DL12345" },
+            { id: 2, name: "Sarah Williams", status: "Available", earnings: 0.00, phone: "555-0102", license: "DL67890" }
+        ];
+
+        let customers = [
+            { id: 1, name: "John Doe", phone: "123-456-7890", email: "john.doe@email.com", address: "123 Main St" },
+            { id: 2, name: "Jane Smith", phone: "987-654-3210", email: "jane.smith@email.com", address: "789 Pine Rd" }
+        ];
+
+        function setView(view) {
+            currentView = view;
+            document.getElementById('loginView').classList.toggle('hidden', view !== 'login');
+            document.getElementById('dashboardView').classList.toggle('hidden', view !== 'dashboard');
+            document.getElementById('addBookingView').classList.toggle('hidden', view !== 'addBooking');
+            document.getElementById('addDriverView').classList.toggle('hidden', view !== 'addDriver');
+            document.getElementById('addCustomerView').classList.toggle('hidden', view !== 'addCustomer');
+            updateDashboard();
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('loginError');
+
+            if (email === "admin@taxi.com" && password === "admin123") {
+                userRole = "Admin";
+                setView('dashboard');
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            } else if (email === "dispatcher@taxi.com" && password === "dispatch123") {
+                userRole = "Dispatcher";
+                setView('dashboard');
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            } else {
+                errorElement.textContent = "Invalid credentials. Please try again.";
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            userRole = null;
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            setView('login');
+        }
+
+        function showDashboard() {
+            setView('dashboard');
+        }
+
+        function showAddBookingForm() {
+            setView('addBooking');
+        }
+
+        function showAddDriverForm() {
+            setView('addDriver');
+        }
+
+        function showAddCustomerForm() {
+            setView('addCustomer');
+        }
+
+        function updateDashboard() {
+            document.getElementById('userRoleDisplay').textContent = `Role: ${userRole || 'N/A'}`;
+            document.getElementById('upcomingBookings').textContent = bookings.filter(b => b.status === "Scheduled" || b.status === "Assigned").length;
+            document.getElementById('availableDrivers').textContent = drivers.filter(d => d.status === "Available").length;
+            const totalEarnings = bookings.filter(b => b.status === "Completed").reduce((sum, b) => sum + b.fare, 0).toFixed(2);
+            document.getElementById('totalEarnings').textContent = `$${totalEarnings}`;
+
+            // Update reports
+            document.getElementById('reportScheduled').textContent = `Scheduled: ${bookings.filter(b => b.status === "Scheduled").length}`;
+            document.getElementById('reportAssigned').textContent = `Assigned: ${bookings.filter(b => b.status === "Assigned").length}`;
+            document.getElementById('reportEnRoute').textContent = `En Route: ${bookings.filter(b => b.status === "En Route").length}`;
+            document.getElementById('reportCompleted').textContent = `Completed: ${bookings.filter(b => b.status === "Completed").length}`;
+            document.getElementById('reportCancelled').textContent = `Cancelled: ${bookings.filter(b => b.status === "Cancelled").length}`;
+
+            const earningsDiv = document.getElementById('driverEarnings');
+            earningsDiv.innerHTML = '';
+            drivers.forEach(driver => {
+                const p = document.createElement('p');
+                p.style.margin = '5px 0';
+                p.textContent = `${driver.name}: $${driver.earnings.toFixed(2)}`;
+                earningsDiv.appendChild(p);
+            });
+
+            // Role-based visibility
+            document.getElementById('addBookingBtn').style.display = (userRole === "Admin" || userRole === "Dispatcher") ? 'block' : 'none';
+            document.getElementById('addDriverBtn').style.display = (userRole === "Admin") ? 'block' : 'none';
+            document.getElementById('addCustomerBtn').style.display = (userRole === "Admin" || userRole === "Dispatcher") ? 'block' : 'none';
+            document.getElementById('fareManagement').style.display = (userRole === "Admin") ? 'block' : 'none';
+
+            updateBookingsTable();
+            updateDriversTable();
+            updateCustomersTable();
+        }
+
+        function updateBookingsTable() {
+            const tbody = document.getElementById('bookingsBody');
+            tbody.innerHTML = '';
+            bookings.forEach(booking => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${booking.id}</td>
+                    <td>${booking.customer}</td>
+                    <td>${booking.pickup}</td>
+                    <td>${booking.destination}</td>
+                    <td>${new Date(booking.time).toLocaleString()}</td>
+                    <td>$${booking.fare.toFixed(2)}</td>
+                    <td>${booking.status}</td>
+                    <td>${booking.driver}</td>
+                    <td>${getBookingActions(booking)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getBookingActions(booking) {
+            let actions = '';
+            if (booking.status === "Scheduled" && (userRole === "Admin" || userRole === "Dispatcher")) {
+                actions += `<select style="margin-right: 5px; padding: 5px;" onchange="handleAssignDriver(${booking.id}, this.value)">
+                    <option value="" disabled selected>Assign Driver</option>`;
+                drivers.filter(d => d.status === "Available").forEach(driver => {
+                    actions += `<option value="${driver.id}">${driver.name}</option>`;
+                });
+                actions += `</select>`;
+            }
+            if (booking.status !== "Completed" && booking.status !== "Cancelled" && (userRole === "Admin" || userRole === "Dispatcher")) {
+                actions += `<select style="padding: 5px;" onchange="handleStatusChange(${booking.id}, this.value)" value="${booking.status}">
+                    <option value="Scheduled" ${booking.status === "Scheduled" ? "selected" : ""}>Scheduled</option>
+                    <option value="Assigned" ${booking.status === "Assigned" ? "selected" : ""}>Assigned</option>
+                    <option value="En Route" ${booking.status === "En Route" ? "selected" : ""}>En Route</option>
+                    <option value="Completed" ${booking.status === "Completed" ? "selected" : ""}>Completed</option>
+                    <option value="Cancelled" ${booking.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+                </select>`;
+            }
+            if (booking.status !== "Cancelled" && booking.status !== "Completed" && (userRole === "Admin" || userRole === "Dispatcher")) {
+                actions += `<button class="btn btn-danger" style="margin-left: 5px;" onclick="handleCancelBooking(${booking.id})">Cancel</button>`;
+            }
+            return actions;
+        }
+
+        function updateDriversTable() {
+            const tbody = document.getElementById('driversBody');
+            tbody.innerHTML = '';
+            drivers.forEach(driver => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${driver.id}</td>
+                    <td>${driver.name}</td>
+                    <td>${driver.phone}</td>
+                    <td>${driver.license}</td>
+                    <td>${driver.status}</td>
+                    <td>$${driver.earnings.toFixed(2)}</td>
+                    <td>${userRole === "Admin" ? `<button class="btn btn-warning" onclick="showEditDriverForm(${driver.id})">Edit</button>` : ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateCustomersTable() {
+            const tbody = document.getElementById('customersBody');
+            tbody.innerHTML = '';
+            customers.forEach(customer => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${customer.id}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.phone}</td>
+                    <td>${customer.email}</td>
+                    <td>${customer.address}</td>
+                    <td>${(userRole === "Admin" || userRole === "Dispatcher") ? `<button class="btn btn-warning" onclick="showEditCustomerForm(${customer.id})">Edit</button>` : ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleAssignDriver(bookingId, driverId) {
+            const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+            const driver = drivers.find(d => d.id === parseInt(driverId));
+            if (bookingIndex !== -1 && driver) {
+                bookings[bookingIndex].driver = driver.name;
+                bookings[bookingIndex].status = "Assigned";
+                const driverIndex = drivers.findIndex(d => d.id === parseInt(driverId));
+                if (driverIndex !== -1) {
+                    drivers[driverIndex].status = "Assigned";
+                }
+                updateDashboard();
+            }
+        }
+
+        function handleStatusChange(bookingId, newStatus) {
+            const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+            if (bookingIndex !== -1) {
+                bookings[bookingIndex].status = newStatus;
+                if (newStatus === "Completed") {
+                    const driverName = bookings[bookingIndex].driver;
+                    const driverIndex = drivers.findIndex(d => d.name === driverName);
+                    if (driverIndex !== -1) {
+                        drivers[driverIndex].status = "Available";
+                        drivers[driverIndex].earnings += bookings[bookingIndex].fare * 0.7;
+                    }
+                }
+                updateDashboard();
+            }
+        }
+
+        function handleCancelBooking(bookingId) {
+            const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+            if (bookingIndex !== -1) {
+                bookings[bookingIndex].status = "Cancelled";
+                updateDashboard();
+            }
+        }
+
+        function submitBooking() {
+            const customer = document.getElementById('bookingCustomer').value;
+            const phone = document.getElementById('bookingPhone').value;
+            const pickup = document.getElementById('bookingPickup').value;
+            const destination = document.getElementById('bookingDestination').value;
+            const time = document.getElementById('bookingTime').value;
+            const fare = document.getElementById('bookingFare').value;
+
+            if (customer && pickup && destination && time && fare) {
+                const newBooking = {
+                    id: bookings.length + 1,
+                    customer,
+                    phone,
+                    pickup,
+                    destination,
+                    time,
+                    fare: parseFloat(fare),
+                    status: "Scheduled",
+                    driver: "Unassigned"
+                };
+                bookings.push(newBooking);
+                setView('dashboard');
+            } else {
+                alert("Please fill in all required fields.");
+            }
+        }
+
+        function submitDriver() {
+            const name = document.getElementById('driverName').value;
+            const phone = document.getElementById('driverPhone').value;
+            const license = document.getElementById('driverLicense').value;
+
+            if (name && phone && license) {
+                const newDriver = {
+                    id: drivers.length + 1,
+                    name,
+                    phone,
+                    license,
+                    status: "Available",
+                    earnings: 0.00
+                };
+                drivers.push(newDriver);
+                setView('dashboard');
+            } else {
+                alert("Please fill in all required fields.");
+            }
+        }
+
+        function submitCustomer() {
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const email = document.getElementById('customerEmail').value;
+            const address = document.getElementById('customerAddress').value;
+
+            if (name && phone && email) {
+                const newCustomer = {
+                    id: customers.length + 1,
+                    name,
+                    phone,
+                    email,
+                    address
+                };
+                customers.push(newCustomer);
+                setView('dashboard');
+            } else {
+                alert("Please fill in all required fields.");
+            }
+        }
+
+        function showEditDriverForm(driverId) {
+            // Placeholder for edit driver form - in a full implementation, this would show a form pre-filled with driver data
+            alert(`Edit functionality for driver ID ${driverId} would be implemented here.`);
+        }
+
+        function showEditCustomerForm(customerId) {
+            // Placeholder for edit customer form - in a full implementation, this would show a form pre-filled with customer data
+            alert(`Edit functionality for customer ID ${customerId} would be implemented here.`);
+        }
+
+        // Initialize dashboard on load if needed
+        window.onload = function() {
+            setView('login');
+        };
+    </script>
+</body>
+</html>
